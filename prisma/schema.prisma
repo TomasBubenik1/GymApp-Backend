@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -18,7 +18,6 @@ model User {
   password         String
   workoutPlans     WorkoutPlan[]
   likedWorkoutPlan LikedWorkoutPlan[]
-  gymEquipment     GymEquipment[]
 }
 
 model LikedWorkoutPlan {
@@ -42,22 +41,22 @@ model WorkoutPlan {
 }
 
 model Exercise {
-  id           Int           @id @unique @default(autoincrement())
-  name         String
-  difficulty   String
-  weight       Float?
-  workoutPlans WorkoutPlan[]
+  id               Int           @id @unique @default(autoincrement())
+  name             String
+  force            String
+  level            String
+  mechanic         String
+  equipment        String
+  primaryMuscles   String[]
+  secondaryMuscles String[]
+  instructions     String[]
+  category         String
+  workoutPlans     WorkoutPlan[] 
 }
 
-model GymEquipment {
-  id     Int    @id @unique @default(autoincrement())
-  name   String
-  userId Int?
-  User   User?  @relation(fields: [userId], references: [id])
-}
 
-model Sessions{
-  session_id String @id @unique
-  expires Int
-  Data Json
+model session {
+  sid String @db.VarChar() @id @unique
+  expire    DateTime @db.Timestamp(6)
+  sess       Json
 }

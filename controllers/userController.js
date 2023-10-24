@@ -41,8 +41,8 @@ async function getLoggedinUser(req, res) {
 
   if(!sessionId){res.status(400).json({message:"You arent logged in"})}
   else{
-  const sessiondata = await prisma.sessions.findUnique({
-    where: {session_id:sessionId}
+  const sessiondata = await prisma.session.findUnique({
+    where: {sid:sessionId}
   })
   res.status(200).json({sessiondata,sessionId});
 }
