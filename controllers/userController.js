@@ -1,8 +1,8 @@
 const prisma = require("../lib/prisma");
 const bcrypt = require("bcrypt");
-const session = require("express-session");
 
-async function createUser(req, res) {
+
+async function Register(req, res) {
   const { email, name, age, currentWeight, goalWeight, height, password } = req.body;
 
   const salt = await bcrypt.genSalt();
@@ -44,13 +44,27 @@ async function getLoggedinUser(req, res) {
   const sessiondata = await prisma.session.findUnique({
     where: {sid:sessionId}
   })
-  res.status(200).json({sessiondata,sessionId});
+  const userId = sessiondata.sess.user.id
+  
+  const exercisePlans = await prisma.workoutPlan.findMany({
+    where: {
+      createdById: userId,
+    },
+    include: {
+      exercises: true,
+      createdBy: true,
+      likedWorkoutPlan: true,
+    },
+  });
+
+
+  res.status(200).json({exercisePlans,sessiondata});
 }
 }
 
 
 module.exports = {
-  createUser,
+  Register,
   getAllUsers,
   getLoggedinUser,
 };

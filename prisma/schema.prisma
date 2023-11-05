@@ -34,29 +34,28 @@ model WorkoutPlan {
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
   title            String
-  exercises        Exercise[]
+  exercises        exercise[]
   createdBy        User               @relation(fields: [createdById], references: [id])
   createdById      Int
   likedWorkoutPlan LikedWorkoutPlan[]
 }
 
-model Exercise {
+model exercise {
   id               Int           @id @unique @default(autoincrement())
-  name             String
-  force            String
+  name             String        @unique
+  force            String?
   level            String
-  mechanic         String
-  equipment        String
+  mechanic         String?
+  equipment        String?
   primaryMuscles   String[]
   secondaryMuscles String[]
   instructions     String[]
-  category         String
-  workoutPlans     WorkoutPlan[] 
+  category      String
+  workoutPlans     WorkoutPlan[]
 }
 
-
 model session {
-  sid String @db.VarChar() @id @unique
-  expire    DateTime @db.Timestamp(6)
-  sess       Json
+  sid    String   @id @unique @db.VarChar()
+  expire DateTime @db.Timestamp(6)
+  sess   Json
 }

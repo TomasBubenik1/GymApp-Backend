@@ -32,9 +32,10 @@ CREATE TABLE "WorkoutPlan" (
 );
 
 -- CreateTable
-CREATE TABLE "Exercise" (
+CREATE TABLE "exercise" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
+    "aliases" TEXT NOT NULL,
     "force" TEXT NOT NULL,
     "level" TEXT NOT NULL,
     "mechanic" TEXT NOT NULL,
@@ -42,22 +43,25 @@ CREATE TABLE "Exercise" (
     "primaryMuscles" TEXT[],
     "secondaryMuscles" TEXT[],
     "instructions" TEXT[],
+    "description" TEXT NOT NULL,
     "category" TEXT NOT NULL,
+    "date_created" TIMESTAMPTZ NOT NULL,
+    "date_updated" TIMESTAMPTZ NOT NULL,
 
-    CONSTRAINT "Exercise_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "exercise_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Sessions" (
-    "session_id" TEXT NOT NULL,
-    "expires" INTEGER NOT NULL,
-    "Data" JSONB NOT NULL,
+CREATE TABLE "session" (
+    "sid" VARCHAR NOT NULL,
+    "expire" TIMESTAMP(6) NOT NULL,
+    "sess" JSONB NOT NULL,
 
-    CONSTRAINT "Sessions_pkey" PRIMARY KEY ("session_id")
+    CONSTRAINT "session_pkey" PRIMARY KEY ("sid")
 );
 
 -- CreateTable
-CREATE TABLE "_ExerciseToWorkoutPlan" (
+CREATE TABLE "_WorkoutPlanToexercise" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL
 );
@@ -78,16 +82,19 @@ CREATE UNIQUE INDEX "LikedWorkoutPlan_workoutPlanId_key" ON "LikedWorkoutPlan"("
 CREATE UNIQUE INDEX "WorkoutPlan_id_key" ON "WorkoutPlan"("id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Exercise_id_key" ON "Exercise"("id");
+CREATE UNIQUE INDEX "exercise_id_key" ON "exercise"("id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Sessions_session_id_key" ON "Sessions"("session_id");
+CREATE UNIQUE INDEX "exercise_name_key" ON "exercise"("name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "_ExerciseToWorkoutPlan_AB_unique" ON "_ExerciseToWorkoutPlan"("A", "B");
+CREATE UNIQUE INDEX "session_sid_key" ON "session"("sid");
 
 -- CreateIndex
-CREATE INDEX "_ExerciseToWorkoutPlan_B_index" ON "_ExerciseToWorkoutPlan"("B");
+CREATE UNIQUE INDEX "_WorkoutPlanToexercise_AB_unique" ON "_WorkoutPlanToexercise"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_WorkoutPlanToexercise_B_index" ON "_WorkoutPlanToexercise"("B");
 
 -- AddForeignKey
 ALTER TABLE "LikedWorkoutPlan" ADD CONSTRAINT "LikedWorkoutPlan_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -99,7 +106,7 @@ ALTER TABLE "LikedWorkoutPlan" ADD CONSTRAINT "LikedWorkoutPlan_workoutPlanId_fk
 ALTER TABLE "WorkoutPlan" ADD CONSTRAINT "WorkoutPlan_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_ExerciseToWorkoutPlan" ADD CONSTRAINT "_ExerciseToWorkoutPlan_A_fkey" FOREIGN KEY ("A") REFERENCES "Exercise"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_WorkoutPlanToexercise" ADD CONSTRAINT "_WorkoutPlanToexercise_A_fkey" FOREIGN KEY ("A") REFERENCES "WorkoutPlan"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_ExerciseToWorkoutPlan" ADD CONSTRAINT "_ExerciseToWorkoutPlan_B_fkey" FOREIGN KEY ("B") REFERENCES "WorkoutPlan"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_WorkoutPlanToexercise" ADD CONSTRAINT "_WorkoutPlanToexercise_B_fkey" FOREIGN KEY ("B") REFERENCES "exercise"("id") ON DELETE CASCADE ON UPDATE CASCADE;

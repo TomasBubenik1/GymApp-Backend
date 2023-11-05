@@ -39,7 +39,11 @@ app.use(bodyParser.json());
 app.use(session(sessionConfig));
 
 const userRoutes = require('./routes/user');
-app.use('/api', userRoutes);
+const authRoutes = require('./routes/auth')
+const exerciseRoutes = require('./routes/exercise')
+const workoutplanRoutes = require('./routes/workoutplan')
+
+app.use('/api',userRoutes,authRoutes,exerciseRoutes,workoutplanRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

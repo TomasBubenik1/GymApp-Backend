@@ -1,6 +1,5 @@
 const prisma = require("../lib/prisma");
 const bcrypt = require('bcrypt');
-const cookiesMiddleware = require('universal-cookie-express');
 
 
 async function Login(req, res) {
