@@ -1,23 +1,29 @@
 const prisma = require("../lib/prisma");
 
 async function createWorkoutPlan(req,res){
-    const {title} = req.body
-    const {id:createdById } = req.session.user;
+  
+    const {title,description} = req.body
+    const userko = req.session.user;
+    const createdById = userko.id
+
     if(!title || !createdById){
-        res.status(400).json({error:'Title and createdById are required'})
-    }
-    try{
-       const workoutPlan = await prisma.workoutPlan.create({
-        data:{
-            title,
-            createdById
-        }
-       })
-       res.status(201).json(workoutPlan)
-    }catch(error){
-        console.error(error);
-        res.status(500).json({ error: "Unable to create WorkoutPlan" });
-    }
+      res.status(400).json({error:'Title and createdById are required'})
+  }
+  try{
+     const workoutPlan = await prisma.workoutPlan.create({
+      data:{
+          title,
+          description,
+          createdById
+      }
+     })
+     res.status(201).json(workoutPlan)
+  }catch(error){
+      console.error(error);
+      res.status(500).json({ error: "Unable to create WorkoutPlan" });
+  }
+    
+    
 }   
 
 async function addExerciseIntoPlan(req,res){{

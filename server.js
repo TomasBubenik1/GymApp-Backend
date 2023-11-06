@@ -6,7 +6,7 @@ const pgSession = require('connect-pg-simple')(session);
 const bodyParser = require('body-parser');
 const cookiesMiddleware = require('universal-cookie-express');
 
-require('dotenv').config(); // Import dotenv and load the variables
+require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
 
