@@ -21,6 +21,7 @@ const pgPool = new pg.Pool({
 const sessionConfig = {
   secret: 'E1gQQ9How3brKZrtv0lU5g==',
   resave: false,
+  rolling: true,
   saveUninitialized: false,
   cookie: { maxAge: 1000 * 60 * 60 * 24, secure: false, httpOnly: false },
   store: new pgSession({

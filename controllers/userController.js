@@ -36,6 +36,8 @@ async function getAllUsers(req, res) {
   }
 }
 
+
+
 async function getLoggedinUser(req, res) {
   const sessionId = req.sessionID;
 
@@ -57,7 +59,7 @@ async function getLoggedinUser(req, res) {
     },
   });
 
-
+  console.log(userId)
   res.status(200).json({exercisePlans,sessiondata});
 }
 }

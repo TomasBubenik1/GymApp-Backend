@@ -2,19 +2,17 @@ const prisma = require("../lib/prisma");
 
 async function createWorkoutPlan(req,res){
   
-    const {title,description} = req.body
-    const userko = req.session.user;
-    const createdById = userko.id
+  const { title, description, userId } = req.body;
 
-    if(!title || !createdById){
-      res.status(400).json({error:'Title and createdById are required'})
+    if(!title || !userId){
+      res.status(400).json({error:'Title and userId are required'})
   }
   try{
      const workoutPlan = await prisma.workoutPlan.create({
       data:{
           title,
           description,
-          createdById
+          createdById:userId
       }
      })
      res.status(201).json(workoutPlan)
