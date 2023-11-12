@@ -23,21 +23,38 @@ async function getAllExercises(req, res) {
 }
 
 async function getFilteredExercises(req,res){
-  const {selectedLevel,selectedForce,selectedMechanic,selectedEquipment,selectedPrimaryMuscle,selectedCategory} = req.body
+  
+  const {selectedSkillLevel,selectedForce,selectedMechanic,selectedEquipment,selectedPrimaryMuscle,selectedCategory} = req.body
+  if(selectedPrimaryMuscle.length > 0){
+    const filteredExercises =  await prisma.exercise.findMany({
+    
+      where: {
+        force:selectedForce,
+        level:selectedSkillLevel,
+        mechanic:selectedMechanic,
+        equipment:selectedEquipment,
+        category:selectedCategory,
+        primaryMuscles:{in:selectedPrimaryMuscle}
+      }
+    }
+    )
+  res.status(200).json({filteredExercises})}
+
 
   const filteredExercises =  await prisma.exercise.findMany({
+    
     where: {
       force:selectedForce,
-      level:selectedLevel,
+      level:selectedSkillLevel,
       mechanic:selectedMechanic,
       equipment:selectedEquipment,
-      primaryMuscles: selectedPrimaryMuscle,
-      category:selectedCategory
+      category:selectedCategory,
     }
     
   })
   res.status(200).json({filteredExercises})
 }
+
 
 module.exports = {
   getAllExercises,
