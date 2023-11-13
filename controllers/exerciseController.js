@@ -19,6 +19,7 @@ async function getAllExercises(req, res) {
     });
   } catch (err) {
     res.status(400).json({ error: "There was an error getting exercises", err });
+    res.send()
   }
 }
 
@@ -27,20 +28,23 @@ async function getFilteredExercises(req,res){
   const {selectedSkillLevel,selectedForce,selectedMechanic,selectedEquipment,selectedPrimaryMuscle,selectedCategory} = req.body
   if(selectedPrimaryMuscle.length > 0){
     const filteredExercises =  await prisma.exercise.findMany({
-    
+
       where: {
-        force:selectedForce,
         level:selectedSkillLevel,
+        force:selectedForce,
         mechanic:selectedMechanic,
-        equipment:selectedEquipment,
         category:selectedCategory,
-        primaryMuscles:{in:selectedPrimaryMuscle}
+        equipment:selectedEquipment,
+        primaryMuscles: { hasEvery: selectedPrimaryMuscle.map(muscle => muscle.toLowerCase())} 
       }
     }
     )
-  res.status(200).json({filteredExercises})}
+    res.status(200).json({filteredExercises})
+    return res.send()
+}
 
 
+ 
   const filteredExercises =  await prisma.exercise.findMany({
     
     where: {
@@ -53,10 +57,21 @@ async function getFilteredExercises(req,res){
     
   })
   res.status(200).json({filteredExercises})
+  return res.send()
 }
+
+async function getOneExercise(req,res){
+  const { exerciseId } = req.body
+  data = await prisma.exercise.findFirst({
+    where:{id:exerciseId}
+  })
+return res.status(200).json({data})
+}
+
 
 
 module.exports = {
   getAllExercises,
-  getFilteredExercises
+  getFilteredExercises,
+  getOneExercise
 };

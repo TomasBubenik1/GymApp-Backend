@@ -19,10 +19,10 @@ async function Register(req, res) {
         password: hashedPassword,
       },
     });
-    res.status(201).json(user);
+    return res.status(201).json(user);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Unable to create user" });
+   return res.status(500).json({ error: "Unable to create user" });
   }
 }
 
@@ -32,7 +32,7 @@ async function getAllUsers(req, res) {
     return res.status(200).json({ data: users });
   } catch (error) {
     console.log(erorr);
-    res.status(400).json({ error: "Unable to get Users" });
+   return res.status(400).json({ error: "Unable to get Users" });
   }
 }
 
@@ -60,7 +60,7 @@ async function getLoggedinUser(req, res) {
   });
 
   console.log(userId)
-  res.status(200).json({exercisePlans,sessiondata});
+  return res.status(200).json({exercisePlans,sessiondata});
 }
 }
 
