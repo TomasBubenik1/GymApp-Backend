@@ -35,7 +35,7 @@ async function getFilteredExercises(req,res){
         mechanic:selectedMechanic,
         category:selectedCategory,
         equipment:selectedEquipment,
-        primaryMuscles: { hasEvery: selectedPrimaryMuscle.map(muscle => muscle.toLowerCase())} 
+        primaryMuscles: { hasEvery: [selectedPrimaryMuscle].map(muscle => muscle.toLowerCase())} 
       }
     }
     )
