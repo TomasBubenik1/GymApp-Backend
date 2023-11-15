@@ -18,6 +18,7 @@ model User {
   password         String
   workoutPlans     WorkoutPlan[]
   likedWorkoutPlan LikedWorkoutPlan[]
+  userExerciseHistory UserExerciseHistory[]
 }
 
 model LikedWorkoutPlan {
@@ -35,13 +36,13 @@ model WorkoutPlan {
   updatedAt        DateTime           @updatedAt
   description      String?           @db.VarChar(500)
   title            String             @db.VarChar(50)
-  exercises        exercise[]
+  exercises        Exercise[]
   createdBy        User               @relation(fields: [createdById], references: [id])
   createdById      Int
-  likedWorkoutPlan LikedWorkoutPlan[]
+  likedWorkoutPlan LikedWorkoutPlan[] 
 }
 
-model exercise {
+model Exercise {
   id               Int           @id @unique @default(autoincrement())
   name             String        @unique
   force            String?
@@ -53,10 +54,23 @@ model exercise {
   instructions     String[]
   category      String
   workoutPlans     WorkoutPlan[]
+  useExerciseHistory UserExerciseHistory[]
 }
 
 model session {
   sid    String   @id @unique @db.VarChar()
   expire DateTime @db.Timestamp(6)
   sess   Json
+}
+
+model UserExerciseHistory {
+  userId        Int         @unique
+  exerciseId    Int         @unique
+  weight        Float 
+  reps          Int 
+  Sets          Int 
+  user          User        @relation(fields: [userId], references: [id])
+  exercise      Exercise    @relation(fields: [exerciseId], references: [id])
+  createdAt     DateTime @default(now())
+  @@id([userId, exerciseId])
 }

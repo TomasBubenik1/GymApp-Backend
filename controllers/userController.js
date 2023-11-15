@@ -56,11 +56,18 @@ async function getLoggedinUser(req, res) {
       exercises: true,
       createdBy: true,
       likedWorkoutPlan: true,
+    
     },
   });
 
+  const exerciseHistory = await prisma.userExerciseHistory.findMany({
+    where:{
+      userId:userId
+    }
+  })  
+
   console.log(userId)
-  return res.status(200).json({exercisePlans,sessiondata});
+  return res.status(200).json({exercisePlans,sessiondata,exerciseHistory});
 }
 }
 
