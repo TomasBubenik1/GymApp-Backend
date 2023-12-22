@@ -53,21 +53,21 @@ async function getLoggedinUser(req, res) {
       createdById: userId,
     },
     include: {
-      exercises: true,
+      exercises:{include:{userExerciseData:true}},
       createdBy: true,
       likedWorkoutPlan: true,
     
     },
   });
 
-  const exerciseHistory = await prisma.userExerciseHistory.findMany({
+  const userExerciseData = await prisma.userExerciseData.findMany({
     where:{
       userId:userId
     }
   })  
 
   console.log(userId)
-  return res.status(200).json({exercisePlans,sessiondata,exerciseHistory});
+  return res.status(200).json({exercisePlans,sessiondata,userExerciseData});
 }
 }
 

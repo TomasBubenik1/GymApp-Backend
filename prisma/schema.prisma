@@ -18,7 +18,7 @@ model User {
   password         String
   workoutPlans     WorkoutPlan[]
   likedWorkoutPlan LikedWorkoutPlan[]
-  userExerciseHistory UserExerciseHistory[]
+  userExerciseHistory UserExerciseData[]
 }
 
 model LikedWorkoutPlan {
@@ -54,7 +54,7 @@ model Exercise {
   instructions     String[]
   category      String
   workoutPlans     WorkoutPlan[]
-  useExerciseHistory UserExerciseHistory[]
+  userExerciseData UserExerciseData[]
 }
 
 model session {
@@ -63,14 +63,16 @@ model session {
   sess   Json
 }
 
-model UserExerciseHistory {
-  userId        Int         @unique
-  exerciseId    Int         @unique
+model UserExerciseData {
+  userId        Int         
+  exerciseId    Int        
   weight        Float 
   reps          Int 
-  Sets          Int 
+  sets          Int 
   user          User        @relation(fields: [userId], references: [id])
   exercise      Exercise    @relation(fields: [exerciseId], references: [id])
   createdAt     DateTime @default(now())
+  userDataHistory Json
   @@id([userId, exerciseId])
 }
+

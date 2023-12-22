@@ -67,6 +67,4 @@ async function addExerciseIntoPlan(req, res) {
   }
 }
 
-
-
-module.exports = { createWorkoutPlan, addExerciseIntoPlan }
+module.exports = { createWorkoutPlan, addExerciseIntoPlan}
