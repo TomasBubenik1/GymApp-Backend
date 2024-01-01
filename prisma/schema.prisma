@@ -18,7 +18,9 @@ model User {
   password         String
   workoutPlans     WorkoutPlan[]
   likedWorkoutPlan LikedWorkoutPlan[]
-  userExerciseHistory UserExerciseData[]
+  userExerciseData UserExerciseData[]
+  userExerciseDataHistory UserExerciseDataHistory[]
+  userProgressData UserProgressData[]
 }
 
 model LikedWorkoutPlan {
@@ -55,6 +57,7 @@ model Exercise {
   category      String
   workoutPlans     WorkoutPlan[]
   userExerciseData UserExerciseData[]
+  userExerciseDataHistory UserExerciseDataHistory[]
 }
 
 model session {
@@ -72,7 +75,26 @@ model UserExerciseData {
   user          User        @relation(fields: [userId], references: [id])
   exercise      Exercise    @relation(fields: [exerciseId], references: [id])
   createdAt     DateTime @default(now())
-  userDataHistory Json
   @@id([userId, exerciseId])
 }
+model UserExerciseDataHistory {
+  userId        Int      
+  exerciseId    Int        
+  weight        Float 
+  reps          Int 
+  sets          Int 
+  user          User        @relation(fields: [userId], references: [id])
+  exercise      Exercise    @relation(fields: [exerciseId], references: [id])
+  createdAt     DateTime @default(now())
+  @@id([userId, exerciseId, createdAt])
+}
 
+model UserProgressData {
+  userId        Int      
+  currentWeight        Float 
+  goalWeight Float      
+  height Float   
+  user          User        @relation(fields: [userId], references: [id])
+  createdAt     DateTime @default(now())
+  @@id([userId, createdAt])
+}

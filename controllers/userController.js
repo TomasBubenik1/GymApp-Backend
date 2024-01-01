@@ -71,6 +71,39 @@ async function getLoggedinUser(req, res) {
 }
 }
 
+async function updateUserDetails(req,res){
+  const { currentWeight, goalWeight, height } = req.body;
+  const sessionId = req.sessionID;
+  if(!sessionId){res.status(400).json({message:"You arent logged in"})}
+  else{
+  const sessiondata = await prisma.session.findUnique({
+    where: {sid:sessionId}
+  })
+  const userId = sessiondata.sess.user.id
+  const oldUserData = prisma.user.findMany({
+    where:{id:userId},
+    include:{
+      goalWeight:true,
+      currentWeight:true,
+      height:true
+    }
+  })
+  const updatedHistory = prisma.userExerciseDataHistory.create({
+
+  })
+  const newUserData = prisma.user.update({
+    where:{id:userId},
+    data:{
+      height:height,
+      currentWeight:currentWeight,
+      goalWeight:goalWeight
+    }
+  })
+  }
+
+
+
+}
 
 module.exports = {
   Register,
