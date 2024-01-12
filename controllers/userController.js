@@ -66,7 +66,7 @@ async function getLoggedinUser(req, res) {
     }
   })  
 
-  console.log(userId)
+  console.log(sessiondata)
   return res.status(200).json({exercisePlans,sessiondata,userExerciseData});
 }
 }

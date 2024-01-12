@@ -16,6 +16,7 @@ model User {
   goalWeight       Float
   height           Float
   password         String
+  profilepicture   String   @default("https://ik.imagekit.io/bubenik/UserProfilePictures/defaultpfp.png")
   workoutPlans     WorkoutPlan[]
   likedWorkoutPlan LikedWorkoutPlan[]
   userExerciseData UserExerciseData[]
