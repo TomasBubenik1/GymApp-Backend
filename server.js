@@ -44,8 +44,9 @@ const authRoutes = require('./routes/auth')
 const exerciseRoutes = require('./routes/exercise')
 const workoutplanRoutes = require('./routes/workoutplan')
 const exerciseDataRoutes = require('./routes/exerciseData')
+const postRoutes = require('./routes/post')
 
-app.use('/api',userRoutes,authRoutes,exerciseRoutes,workoutplanRoutes,exerciseDataRoutes);
+app.use('/api',userRoutes,authRoutes,exerciseRoutes,workoutplanRoutes,exerciseDataRoutes,postRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

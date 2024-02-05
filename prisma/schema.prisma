@@ -18,10 +18,11 @@ model User {
   password         String
   profilepicture   String   @default("https://ik.imagekit.io/bubenik/UserProfilePictures/defaultpfp.png")
   workoutPlans     WorkoutPlan[]
+  posts Post[]
   likedWorkoutPlan LikedWorkoutPlan[]
   userExerciseData UserExerciseData[]
   userExerciseDataHistory UserExerciseDataHistory[]
-  userProgressData UserProgressData[]
+  likedPosts LikedPost[]
 }
 
 model LikedWorkoutPlan {
@@ -78,6 +79,7 @@ model UserExerciseData {
   createdAt     DateTime @default(now())
   @@id([userId, exerciseId])
 }
+
 model UserExerciseDataHistory {
   userId        Int      
   exerciseId    Int        
@@ -90,12 +92,43 @@ model UserExerciseDataHistory {
   @@id([userId, exerciseId, createdAt])
 }
 
-model UserProgressData {
-  userId        Int      
-  currentWeight        Float 
-  goalWeight Float      
-  height Float   
+model Post {
+  id               Int                @id @unique @default(autoincrement())
+  userId           Int
+  createdAt        DateTime           @default(now())
+  content          String 
+  likes            Int @default(0)
+  image            String?
+  video            String?
+  createdById      Int
+  createdBy        User               @relation(fields: [createdById], references: [id])
+  likedPosts       LikedPost[]
+  comments         Comment[]          // Added this line to establish a relation with comments
+
+  @@index([userId])
+}
+
+
+model Comment {
+  id               Int                @id @unique @default(autoincrement())
+  userId           Int
+  createdAt        DateTime           @default(now())
+  content          String 
+  image            String?
+  video            String?
+  createdById      Int
+  post             Post               @relation(fields: [postId], references: [id])
+  postId           Int
+
+  @@index([userId])
+}
+
+
+model LikedPost {
+  userId        Int         @unique
+  postId        Int         @unique
   user          User        @relation(fields: [userId], references: [id])
-  createdAt     DateTime @default(now())
-  @@id([userId, createdAt])
+  Post          Post @relation(fields: [postId], references: [id])
+
+  @@id([userId, postId])
 }

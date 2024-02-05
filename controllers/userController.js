@@ -40,6 +40,7 @@ async function getAllUsers(req, res) {
 
 async function getLoggedinUser(req, res) {
   const sessionId = req.sessionID;
+  const userko = r
 
   if(!sessionId){res.status(400).json({message:"You arent logged in"})}
   else{
