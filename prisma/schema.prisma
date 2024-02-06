@@ -1,0 +1,136 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                      Int                       @id @unique @default(autoincrement())
+  email                   String                    @unique
+  realname                String
+  username                String                    @unique
+  nickname                String
+  age                     Int
+  currentWeight           Float
+  goalWeight              Float
+  height                  Float
+  password                String
+  profilepicture          String                    @default("https://ik.imagekit.io/bubenik/UserProfilePictures/defaultpfp.png")
+  workoutPlans            WorkoutPlan[]
+  posts                   Post[]
+  likedWorkoutPlan        LikedWorkoutPlan[]
+  userExerciseData        UserExerciseData[]
+  userExerciseDataHistory UserExerciseDataHistory[]
+  likedPosts              LikedPost[]
+}
+
+model LikedWorkoutPlan {
+  userId        Int         @unique
+  workoutPlanId Int         @unique
+  user          User        @relation(fields: [userId], references: [id])
+  workoutPlan   WorkoutPlan @relation(fields: [workoutPlanId], references: [id])
+
+  @@id([userId, workoutPlanId])
+}
+
+model WorkoutPlan {
+  id               Int                @id @unique @default(autoincrement())
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  description      String?            @db.VarChar(500)
+  title            String             @db.VarChar(50)
+  exercises        Exercise[]
+  createdBy        User               @relation(fields: [createdById], references: [id])
+  createdById      Int
+  likedWorkoutPlan LikedWorkoutPlan[]
+}
+
+model Exercise {
+  id                      Int                       @id @unique @default(autoincrement())
+  name                    String                    @unique
+  force                   String?
+  level                   String
+  mechanic                String?
+  equipment               String?
+  primaryMuscles          String[]
+  secondaryMuscles        String[]
+  instructions            String[]
+  category                String
+  workoutPlans            WorkoutPlan[]
+  userExerciseData        UserExerciseData[]
+  userExerciseDataHistory UserExerciseDataHistory[]
+}
+
+model session {
+  sid    String   @id @unique @db.VarChar()
+  expire DateTime @db.Timestamp(6)
+  sess   Json
+}
+
+model UserExerciseData {
+  userId     Int
+  exerciseId Int
+  weight     Float
+  reps       Int
+  sets       Int
+  user       User     @relation(fields: [userId], references: [id])
+  exercise   Exercise @relation(fields: [exerciseId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@id([userId, exerciseId])
+}
+
+model UserExerciseDataHistory {
+  userId     Int
+  exerciseId Int
+  weight     Float
+  reps       Int
+  sets       Int
+  user       User     @relation(fields: [userId], references: [id])
+  exercise   Exercise @relation(fields: [exerciseId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@id([userId, exerciseId, createdAt])
+}
+
+model Post {
+  id          Int         @id @unique @default(autoincrement())
+  userId      Int
+  createdAt   DateTime    @default(now())
+  content     String
+  likes       Int         @default(0)
+  image       String?
+  video       String?
+  createdById Int
+  createdBy   User        @relation(fields: [createdById], references: [id])
+  likedPosts  LikedPost[]
+  comments    Comment[] // Added this line to establish a relation with comments
+
+  @@index([userId])
+}
+
+model Comment {
+  id          Int      @id @unique @default(autoincrement())
+  userId      Int
+  createdAt   DateTime @default(now())
+  content     String
+  image       String?
+  video       String?
+  createdById Int
+  post        Post     @relation(fields: [postId], references: [id])
+  postId      Int
+
+  @@index([userId])
+}
+
+model LikedPost {
+  userId Int  @unique
+  postId Int  @unique
+  user   User @relation(fields: [userId], references: [id])
+  Post   Post @relation(fields: [postId], references: [id])
+
+  @@id([userId, postId])
+}

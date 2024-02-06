@@ -1,0 +1,22 @@
+{
+    // Editor
+    "editor.formatOnSave": true,
+    "editor.wordWrap": "on",
+  
+    // Prettier
+    "prettier.printWidth": 120,
+    "prettier.useEditorConfig": true,
+  
+    "[json]": {
+      "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[javascript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[prisma]": {
+      "editor.defaultFormatter": "Prisma.prisma",
+    },
+  }
