@@ -1,23 +1,34 @@
 const prisma = require("../lib/prisma");
+const imagekit = require("../lib/imagekit");
+const upload = require("../utils/multer");
+const crypto = require("crypto");
 
 async function createPost(req, res) {
   const { content, image, video } = req.body;
   const creatingUser = req.session.user;
+  var buffer = req.file.buffer;
+  console.log(buffer);
+  const randomName = crypto.randomBytes(32).toString("hex");
 
-  if (!creatingUser) {
-    res.status(400).json({ message: "You must be logged in to create post!" });
-  } else {
-    const NewPost = await prisma.post.create({
-      data: {
-        userId: creatingUser.id,
-        content: content,
-        image: image,
-        video: video,
-        createdById: creatingUser.id,
-      },
-    });
-    res.status(200).json({ NewPost });
-  }
+  // if (!creatingUser) {
+  //   res.status(400).json({ message: "You must be logged in to create post!" });
+  // } else {
+  //   const uploadResponse = await imagekit.upload({
+  //     file: buffer,
+  //     fileName: randomName,
+  //   });
+
+  //   const NewPost = await prisma.post.create({
+  //     data: {
+  //       userId: creatingUser.id,
+  //       content: content,
+  //       image: image,
+  //       video: video,
+  //       createdById: creatingUser.id,
+  //     },
+  //   });
+  //   res.status(200).json({ NewPost });
+  // }
 }
 
 async function deletePost(req, res) {
@@ -25,13 +36,13 @@ async function deletePost(req, res) {
   const user = req.session.user;
   if (!postId) {
     res
-      .status(400)  
+      .status(400)
       .json({ message: "You must specify the postId you want to comment on!" });
   } else if (!user) {
     res.status(400).json({ message: "You must be logged in to delete post!" });
   } else {
     post = await prisma.post.findUnique({
-      where: { postId: postId },  
+      where: { postId: postId },
     });
     if (post.createdById != user.id) {
       res
