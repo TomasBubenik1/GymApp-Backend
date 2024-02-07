@@ -113,11 +113,12 @@ async function updateUserDetails(req, res) {
 }
 
 async function getProfileInfo(req, res) {
-  const { name } = req.body;
+  const { username } = req.body;
   const ReqUser = req.session.user;
 
   const response = await prisma.user.findFirst({
-    where: { name: name },
+    where: { username: username },
+    select: { posts },
   });
 }
 

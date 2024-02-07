@@ -10,13 +10,13 @@ datasource db {
 model User {
   id                      Int                       @id @unique @default(autoincrement())
   email                   String                    @unique
-  realname                String
+  realname                String?
   username                String                    @unique
   nickname                String
-  age                     Int
-  currentWeight           Float
-  goalWeight              Float
-  height                  Float
+  age                     Int?
+  currentWeight           Float?
+  goalWeight              Float?
+  height                  Float?
   password                String
   profilepicture          String                    @default("https://ik.imagekit.io/bubenik/UserProfilePictures/defaultpfp.png")
   workoutPlans            WorkoutPlan[]
@@ -46,6 +46,7 @@ model WorkoutPlan {
   createdBy        User               @relation(fields: [createdById], references: [id])
   createdById      Int
   likedWorkoutPlan LikedWorkoutPlan[]
+  Visibility String @default("Public")
 }
 
 model Exercise {
