@@ -1,0 +1,9 @@
+-- AlterTable
+ALTER TABLE "User" ALTER COLUMN "realname" DROP NOT NULL,
+ALTER COLUMN "age" DROP NOT NULL,
+ALTER COLUMN "currentWeight" DROP NOT NULL,
+ALTER COLUMN "goalWeight" DROP NOT NULL,
+ALTER COLUMN "height" DROP NOT NULL;
+
+-- AlterTable
+ALTER TABLE "WorkoutPlan" ADD COLUMN     "Visibility" TEXT NOT NULL DEFAULT 'Public';

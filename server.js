@@ -47,6 +47,7 @@ const exerciseRoutes = require("./routes/exercise");
 const workoutplanRoutes = require("./routes/workoutplan");
 const exerciseDataRoutes = require("./routes/exerciseData");
 const postRoutes = require("./routes/post");
+const friendRoutes = require("./routes/friend");
 
 app.use(
   "/api",
@@ -55,7 +56,8 @@ app.use(
   exerciseRoutes,
   workoutplanRoutes,
   exerciseDataRoutes,
-  postRoutes
+  postRoutes,
+  friendRoutes
 );
 
 app.listen(port, () => {

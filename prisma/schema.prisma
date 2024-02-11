@@ -18,13 +18,29 @@ model User {
   goalWeight              Float?
   height                  Float?
   password                String
-  profilepicture          String                    @default("https://ik.imagekit.io/bubenik/UserProfilePictures/defaultpfp.png")
+  profilepicture          String                    @default("https://ik.imagekit.io/bubenik/UserProfilePictures/defaultpfp1.png")
   workoutPlans            WorkoutPlan[]
   posts                   Post[]
   likedWorkoutPlan        LikedWorkoutPlan[]
   userExerciseData        UserExerciseData[]
   userExerciseDataHistory UserExerciseDataHistory[]
   likedPosts              LikedPost[]
+  sentRequests            FriendRequest[]           @relation("RequestSender")
+  receivedRequests        FriendRequest[]           @relation("RequestReceiver")
+}
+
+model FriendRequest {
+  id         Int      @id @default(autoincrement())
+  senderId   Int
+  receiverId Int
+  status     String   @default("pending") // Values can be "pending", "accepted", "rejected"
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  sender   User @relation("RequestSender", fields: [senderId], references: [id])
+  receiver User @relation("RequestReceiver", fields: [receiverId], references: [id])
+
+  @@unique([senderId, receiverId])
 }
 
 model LikedWorkoutPlan {
@@ -46,7 +62,8 @@ model WorkoutPlan {
   createdBy        User               @relation(fields: [createdById], references: [id])
   createdById      Int
   likedWorkoutPlan LikedWorkoutPlan[]
-  Visibility String @default("Public")
+  visibility       String             @default("Public")
+  thumbnail        String             @default("https://ik.imagekit.io/bubenik/WorkoutPlanThumbnails/defaultworkoutplanthumbnail")
 }
 
 model Exercise {

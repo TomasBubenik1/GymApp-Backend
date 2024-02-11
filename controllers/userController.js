@@ -116,10 +116,92 @@ async function getProfileInfo(req, res) {
   const { username } = req.body;
   const ReqUser = req.session.user;
 
-  const response = await prisma.user.findFirst({
-    where: { username: username },
-    select: { posts },
-  });
+  if (ReqUser.username != username) {
+    try {
+      const userProfile = await prisma.user.findFirst({
+        where: { username: username },
+        select: {
+          id: true,
+          nickname: true,
+          profilepicture: true,
+          posts: true,
+
+          workoutPlans: { where: { Visibility: "Public" } },
+        },
+      });
+
+      if (!userProfile) {
+        return res.status(404).json({ error: "User profile not found." });
+      }
+      const requestSentByLoggedInUser = await prisma.friendRequest.findUnique({
+        where: {
+          senderId_receiverId: {
+            senderId: ReqUser.id,
+            receiverId: userProfile.id,
+          },
+        },
+      });
+
+      const requestReceivedFromProfileUser =
+        await prisma.friendRequest.findUnique({
+          where: {
+            senderId_receiverId: {
+              senderId: userProfile.id,
+              receiverId: ReqUser.id,
+            },
+          },
+        });
+      if (requestSentByLoggedInUser) {
+        return res.status(200).json({
+          userProfile,
+          friendRequestStatus: {
+            status: requestSentByLoggedInUser.status,
+            direction: "outgoing",
+          },
+        });
+      }
+      if (requestReceivedFromProfileUser) {
+        res.status(200).json({
+          userProfile,
+          friendRequestStatus: {
+            status: requestReceivedFromProfileUser.status,
+            direction: "incoming",
+          },
+        });
+      } else {
+        return res.status(200).json({
+          userProfile,
+          friendRequestStatus: {
+            status: null,
+            direction: null,
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching profile info:", error);
+      return res.status(500).json({ error: "Internal server error." });
+    }
+  } else {
+    if (ReqUser.username === username) {
+      try {
+        const userProfile = await prisma.user.findFirst({
+          where: { username: username },
+          select: {
+            id: true,
+            nickname: true,
+            profilepicture: true,
+            posts: true,
+            workoutPlans: true,
+          },
+        });
+        return res.status(200).json({ userProfile });
+      } catch (error) {
+        return res
+          .status(500)
+          .json({ "There was error fetching profile info:": error });
+      }
+    }
+  }
 }
 
 module.exports = {
