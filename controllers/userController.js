@@ -126,7 +126,7 @@ async function getProfileInfo(req, res) {
           profilepicture: true,
           posts: true,
 
-          workoutPlans: { where: { Visibility: "Public" } },
+          workoutPlans: { where: { visibility: "Public" } },
         },
       });
 
