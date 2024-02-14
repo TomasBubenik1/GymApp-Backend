@@ -2,7 +2,7 @@ const prisma = require("../lib/prisma");
 
 async function getUserExerciesData(req, res) {
   const { exerciseId } = req.body;
-  const user = req.session.user;
+  const user = req.session?.user;
 
   if (!req.session) {
     res.status(400).json({ message: "You arent logged in" });
@@ -17,7 +17,7 @@ async function getUserExerciesData(req, res) {
 
 async function addExerciseData(req, res) {
   const { exerciseId, weight, reps, sets } = req.body;
-  const userko = req.session.user;
+  const userko = req.session?.user;
 
   console.log(userko);
   if (!req.session) {
@@ -38,14 +38,10 @@ async function addExerciseData(req, res) {
 
 async function getSingleExerciseData(req, res) {
   const { exerciseId } = req.body;
-  const sessionId = req.sessionID;
-  if (!sessionId) {
+  const userId = req.session?.user?.id;
+  if (!userId) {
     res.status(400).json({ message: "You arent logged in" });
   } else {
-    const sessiondata = await prisma.session.findUnique({
-      where: { sid: sessionId },
-    });
-    const userId = sessiondata.sess.user.id;
     const currentExerciseData = await prisma.userExerciseData.findUnique({
       where: { userId_exerciseId: { userId, exerciseId } },
     });
@@ -59,14 +55,10 @@ async function getSingleExerciseData(req, res) {
 
 async function updateExerciseData(req, res) {
   const { exerciseId, newWeight, newReps, newSets } = req.body;
-  const sessionId = req.sessionID;
-  if (!sessionId) {
+  const userId = req.session?.user?.id;
+  if (!userId) {
     res.status(400).json({ message: "You arent logged in" });
   } else {
-    const sessiondata = await prisma.session.findUnique({
-      where: { sid: sessionId },
-    });
-    const userId = sessiondata.sess.user.id;
     const existingExerciseData = await prisma.userExerciseData.findUnique({
       where: { userId_exerciseId: { userId, exerciseId } },
     });
@@ -95,14 +87,10 @@ async function updateExerciseData(req, res) {
 }
 
 async function getLatestEditedExercise(req, res) {
-  const sessionId = req.sessionID;
-  if (!sessionId) {
+  const userId = req.session?.user?.id;
+  if (!userId) {
     res.status(400).json({ message: "You arent logged in" });
   } else {
-    const sessiondata = await prisma.session.findUnique({
-      where: { sid: sessionId },
-    });
-    const userId = sessiondata.sess.user.id;
     try {
       const latestExerciseId = await prisma.userExerciseDataHistory.findFirst({
         where: { userId: userId },

@@ -2,8 +2,8 @@ const prisma = require("../lib/prisma");
 
 async function getAllExercises(req, res) {
   try {
-    const page = req.query.page ? parseInt(req.query.page) : 1;
-    const limit = req.query.limit ? parseInt(req.query.limit) : 30;
+    const page = req.body.page ? parseInt(req.body.page) : 1;
+    const limit = 30;
 
     const totalExercises = await prisma.exercise.count();
     const exercises = await prisma.exercise.findMany({
@@ -35,9 +35,18 @@ async function getFilteredExercises(req, res) {
     selectedCategory,
     searchText,
   } = req.body;
+  const page = req.body.page ? parseInt(req.body.page) : 1;
+  const limit = 30;
+
   if (selectedPrimaryMuscle.length > 0) {
     const filteredExercises = await prisma.exercise.findMany({
+      skip: (page - 1) * limit,
+      take: limit,
       where: {
+        name: {
+          contains: searchText,
+          mode: "insensitive",
+        },
         level: selectedSkillLevel,
         force: selectedForce,
         mechanic: selectedMechanic,
@@ -50,11 +59,12 @@ async function getFilteredExercises(req, res) {
         },
       },
     });
-    res.status(200).json({ filteredExercises });
-    return res.send();
+    return res.status(200).json({ filteredExercises, page: page });
   }
 
   const filteredExercises = await prisma.exercise.findMany({
+    skip: (page - 1) * limit,
+    take: limit,
     where: {
       name: {
         contains: searchText,
@@ -67,8 +77,7 @@ async function getFilteredExercises(req, res) {
       category: selectedCategory,
     },
   });
-  res.status(200).json({ filteredExercises });
-  return res.send();
+  return res.status(200).json({ filteredExercises, page: page });
 }
 
 async function getOneExercise(req, res) {

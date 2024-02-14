@@ -59,6 +59,9 @@ async function getLoggedinUser(req, res) {
       where: {
         id: userId,
       },
+      include: {
+        likedPosts: true,
+      },
     });
 
     const exercisePlans = await prisma.workoutPlan.findMany({
@@ -126,7 +129,7 @@ async function getProfileInfo(req, res) {
           profilepicture: true,
           posts: true,
 
-          workoutPlans: { where: { visibility: "Public" } },
+          workoutPlans: { where: { isPublic: true } },
         },
       });
 
@@ -190,7 +193,11 @@ async function getProfileInfo(req, res) {
             id: true,
             nickname: true,
             profilepicture: true,
-            posts: true,
+            posts: {
+              orderBy: {
+                createdAt: "desc",
+              },
+            },
             workoutPlans: true,
           },
         });

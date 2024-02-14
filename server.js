@@ -48,6 +48,7 @@ const workoutplanRoutes = require("./routes/workoutplan");
 const exerciseDataRoutes = require("./routes/exerciseData");
 const postRoutes = require("./routes/post");
 const friendRoutes = require("./routes/friend");
+const calorieRoutes = require("./routes/calories");
 
 app.use(
   "/api",
@@ -57,6 +58,7 @@ app.use(
   workoutplanRoutes,
   exerciseDataRoutes,
   postRoutes,
+  calorieRoutes,
   friendRoutes
 );
 

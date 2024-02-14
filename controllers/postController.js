@@ -13,10 +13,11 @@ async function createPost(req, res) {
   } else {
     if (req.file) {
       try {
-        const randomName = crypto.randomBytes(32).toString("hex");
+        const randomImageName = crypto.randomBytes(32).toString("hex");
+
         const uploadResponse = await imagekit.upload({
           file: req.file.buffer.toString("base64"),
-          fileName: randomName,
+          fileName: randomImageName,
           folder: "PostImages",
         });
 
@@ -128,42 +129,108 @@ async function postComment(req, res) {
 }
 async function toggleLike(req, res) {
   const { postId } = req.body;
-  const user = req.session.user;
+  const userId = req.session.user?.id;
 
   if (!postId) {
-    res
-      .status(400)
-      .json({ message: "You must specify the postId you want to like!" });
-  } else if (!user) {
-    res
-      .status(400)
-      .json({ message: "You need to be logged in to like a post!" });
+    return res.status(400).json({ message: "Post ID must be specified." });
+  }
+
+  if (!userId) {
+    return res
+      .status(401)
+      .json({ message: "You need to be logged in to like a post." });
   }
 
   try {
-    const likedPost = await prisma.likedPost.findUnique({
-      where: { postId: postId, userId: user.id },
+    const existingLike = await prisma.likedPost.findUnique({
+      where: {
+        userId_postId: {
+          userId: userId,
+          postId: postId,
+        },
+      },
     });
-    if (likedPost) {
+
+    let responseMessage = "";
+    let updatedLikes;
+
+    if (existingLike) {
       await prisma.likedPost.delete({
-        where: { postId, userId: user.id },
+        where: {
+          userId_postId: {
+            userId: userId,
+            postId: postId,
+          },
+        },
       });
-      res.status(200).json({ message: "Sucesfully unliked post" });
+      const post = await prisma.post.update({
+        where: {
+          id: postId,
+        },
+        data: {
+          likes: { decrement: 1 },
+        },
+      });
+      responseMessage = "Successfully unliked the post.";
+      updatedLikes = post.likes;
     } else {
       await prisma.likedPost.create({
         data: {
-          userId: user.id,
+          userId: userId,
           postId: postId,
         },
       });
-      res.status(200).json({ message: "Sucesfully liked post" });
+      const post = await prisma.post.update({
+        where: {
+          id: postId,
+        },
+        data: {
+          likes: { increment: 1 },
+        },
+      });
+      responseMessage = "Successfully liked the post.";
+      updatedLikes = post.likes;
     }
-  } catch (erorr) {
-    res.status(500).json({ message: "There was error liking the post!" });
+
+    return res.json({ message: responseMessage, likes: updatedLikes });
+  } catch (error) {
+    console.error("Error toggling like:", error);
+    return res.status(500).json({
+      message: "There was an error processing your request.",
+      error: error.message,
+    });
+  }
+}
+
+async function getSinglePost(req, res) {
+  let { postId } = req.body;
+  postId = parseInt(postId, 10);
+  if (isNaN(postId)) {
+    return res.status(400).json({ error: "Invalid post ID." });
+  }
+
+  try {
+    const post = await prisma.post.findFirst({
+      where: {
+        id: postId,
+      },
+      include: {
+        comments: true,
+        createdBy: {
+          select: { username: true, nickname: true, profilepicture: true },
+        },
+      },
+    });
+    return res.status(200).json({ post });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: "Internal server error", details: error.message });
   }
 }
 
 module.exports = {
+  getSinglePost,
   createPost,
   postComment,
   deletePost,

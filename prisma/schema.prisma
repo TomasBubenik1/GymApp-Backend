@@ -27,13 +27,61 @@ model User {
   likedPosts              LikedPost[]
   sentRequests            FriendRequest[]           @relation("RequestSender")
   receivedRequests        FriendRequest[]           @relation("RequestReceiver")
+  dailyCalorieIntake      DailyCalorieIntake[]
+  weightHistory           UserWeightHistory[]
+  heightHistory           UserHeightHistory[]
+  calorieIntakeHistory    CalorieIntakeHistory[]
+}
+
+model UserWeightHistory {
+  id     Int      @id @default(autoincrement())
+  userId Int
+  weight Float
+  date   DateTime @default(now())
+  user   User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, date])
+}
+
+model UserHeightHistory {
+  id     Int      @id @default(autoincrement())
+  userId Int
+  height Float
+  date   DateTime @default(now())
+  user   User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, date])
+}
+
+model CalorieIntakeHistory {
+  id               Int      @id @default(autoincrement())
+  userId           Int
+  date             DateTime @default(now())
+  goalCalories     Int
+  consumedCalories Int
+  user             User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, date], name: "userCalorieDateIndex")
+}
+
+model DailyCalorieIntake {
+  id               Int      @id @default(autoincrement())
+  userId           Int
+  date             DateTime
+  goalCalories     Int      @default(0)
+  consumedCalories Int      @default(0)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date])
+  @@index([userId, date])
 }
 
 model FriendRequest {
   id         Int      @id @default(autoincrement())
   senderId   Int
   receiverId Int
-  status     String   @default("pending") // Values can be "pending", "accepted", "rejected"
+  status     String   @default("pending")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -44,8 +92,8 @@ model FriendRequest {
 }
 
 model LikedWorkoutPlan {
-  userId        Int         @unique
-  workoutPlanId Int         @unique
+  userId        Int
+  workoutPlanId Int
   user          User        @relation(fields: [userId], references: [id])
   workoutPlan   WorkoutPlan @relation(fields: [workoutPlanId], references: [id])
 
@@ -56,13 +104,14 @@ model WorkoutPlan {
   id               Int                @id @unique @default(autoincrement())
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
-  description      String?            @db.VarChar(500)
-  title            String             @db.VarChar(50)
+  description      String?            @db.VarChar(255)
+  title            String             @db.VarChar(35)
+  isOfficial       Boolean            @default(false) @db.Boolean
   exercises        Exercise[]
   createdBy        User               @relation(fields: [createdById], references: [id])
   createdById      Int
   likedWorkoutPlan LikedWorkoutPlan[]
-  visibility       String             @default("Public")
+  isPublic         Boolean            @default(true)
   thumbnail        String             @default("https://ik.imagekit.io/bubenik/WorkoutPlanThumbnails/defaultworkoutplanthumbnail")
 }
 
@@ -125,7 +174,7 @@ model Post {
   createdById Int
   createdBy   User        @relation(fields: [createdById], references: [id])
   likedPosts  LikedPost[]
-  comments    Comment[] // Added this line to establish a relation with comments
+  comments    Comment[]
 
   @@index([userId])
 }
@@ -145,8 +194,8 @@ model Comment {
 }
 
 model LikedPost {
-  userId Int  @unique
-  postId Int  @unique
+  userId Int
+  postId Int
   user   User @relation(fields: [userId], references: [id])
   Post   Post @relation(fields: [postId], references: [id])
 
