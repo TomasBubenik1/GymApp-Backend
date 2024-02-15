@@ -2,17 +2,8 @@ const prisma = require("../lib/prisma");
 const bcrypt = require("bcrypt");
 
 async function Register(req, res) {
-  const {
-    email,
-    realname,
-    nickname,
-    username,
-    age,
-    currentWeight,
-    goalWeight,
-    height,
-    password,
-  } = req.body;
+  const { email, username, age, currentWeight, goalWeight, height, password } =
+    req.body;
 
   const salt = await bcrypt.genSalt();
   const hashedPassword = await bcrypt.hash(password, salt);
@@ -21,7 +12,7 @@ async function Register(req, res) {
       data: {
         email,
         realname,
-        nickname,
+        nickname: username,
         username,
         age,
         currentWeight,
@@ -211,9 +202,45 @@ async function getProfileInfo(req, res) {
   }
 }
 
+async function SearchUsers(req, res) {
+  const { searchText } = req.body;
+  const ReqUser = req.session.user;
+
+  if (!ReqUser) {
+    return res.status(400).json({
+      message: "You aren't logged in.",
+    });
+  }
+
+  try {
+    const foundUsers = await prisma.user.findMany({
+      where: {
+        username: {
+          contains: searchText,
+          mode: "insensitive",
+        },
+      },
+      select: {
+        username: true,
+        nickname: true,
+        profilepicture: true, // Ensure this field name matches your schema definition
+      },
+    });
+
+    res.status(200).json({ foundUsers });
+  } catch (error) {
+    // Handle errors from the database operation
+    console.error("Failed to search for users:", error);
+    res.status(500).json({
+      message: "Internal server error while searching for users.",
+    });
+  }
+}
+
 module.exports = {
   Register,
   getAllUsers,
   getLoggedinUser,
   getProfileInfo,
+  SearchUsers,
 };
