@@ -2,10 +2,10 @@ const prisma = require("../lib/prisma");
 
 async function createWorkoutPlan(req, res) {
   const { title, description } = req.body;
-  const userId = req.session?.user?.id;
+  const userId = req.session.user?.id;
 
   if (!title || !userId) {
-    res.status(400).json({ error: "Title and userId are required" });
+    return res.status(400).json({ error: "Title and userId are required" });
   }
   try {
     const workoutPlan = await prisma.workoutPlan.create({
@@ -15,10 +15,10 @@ async function createWorkoutPlan(req, res) {
         createdById: userId,
       },
     });
-    res.status(201).json(workoutPlan);
+    return res.status(201).json(workoutPlan);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Unable to create WorkoutPlan" });
+    return res.status(500).json({ error: "Unable to create WorkoutPlan" });
   }
 }
 

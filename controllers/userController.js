@@ -2,17 +2,50 @@ const prisma = require("../lib/prisma");
 const bcrypt = require("bcrypt");
 
 async function Register(req, res) {
-  const { email, username, age, currentWeight, goalWeight, height, password } =
-    req.body;
+  const {
+    email,
+    username,
+    nickname,
+    age,
+    currentWeight,
+    goalWeight,
+    height,
+    password,
+  } = req.body;
 
   const salt = await bcrypt.genSalt();
   const hashedPassword = await bcrypt.hash(password, salt);
+
+  const emailTaken = await prisma.user.findFirst({
+    where: {
+      email: email,
+    },
+  });
+  const resultEmail = Boolean(emailTaken);
+  if (resultEmail == true) {
+    return res
+      .status(400)
+      .json({ message: "This username is already being uesd." });
+  }
+
+  const usernameTaken = await prisma.user.findFirst({
+    where: {
+      username: username,
+    },
+  });
+
+  const resultUsername = Boolean(usernameTaken);
+  if (resultUsername == true) {
+    return res
+      .status(400)
+      .json({ message: "This username is already being uesd." });
+  }
+
   try {
     const user = await prisma.user.create({
       data: {
         email,
-        realname,
-        nickname: username,
+        nickname,
         username,
         age,
         currentWeight,
@@ -102,6 +135,43 @@ async function updateUserDetails(req, res) {
         currentWeight: currentWeight,
         goalWeight: goalWeight,
       },
+    });
+  }
+}
+
+async function checkUniqueUsername(req, res) {
+  const { username } = req.body;
+  if (!username) {
+    return res
+      .status(400)
+      .json({ message: "You must provide username you want to check." });
+  } else if (username) {
+    const isTaken = await prisma.user.findFirst({
+      where: {
+        username: username,
+      },
+    });
+    const result = Boolean(isTaken);
+    return res.status(200).json({
+      result: Boolean(isTaken),
+    });
+  }
+}
+async function checkUniqueEmail(req, res) {
+  const { email } = req.body;
+  if (!email) {
+    return res
+      .status(400)
+      .json({ message: "You must provide username you want to check." });
+  } else if (email) {
+    const isTaken = await prisma.user.findFirst({
+      where: {
+        email: email,
+      },
+    });
+    const result = Boolean(isTaken);
+    return res.status(200).json({
+      result: Boolean(isTaken),
     });
   }
 }
@@ -243,4 +313,6 @@ module.exports = {
   getLoggedinUser,
   getProfileInfo,
   SearchUsers,
+  checkUniqueEmail,
+  checkUniqueUsername,
 };
