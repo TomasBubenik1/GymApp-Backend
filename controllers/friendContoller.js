@@ -1,11 +1,13 @@
 const prisma = require("../lib/prisma");
+const { createFriendRequestNotification } = require("./notificationController");
 
 async function sendFriendRequest(req, res) {
   const { receiverId } = req.body;
-  const senderUser = req.session.user;
+  const senderId = req.session?.user?.id;
 
-  const senderId = senderUser.id;
-
+  if (!senderId) {
+    return res.status(400).json({ message: "You aren't logged in!" });
+  }
   try {
     const existingRequest = await prisma.friendRequest.findUnique({
       where: {
@@ -34,6 +36,7 @@ async function sendFriendRequest(req, res) {
           status: "pending",
         },
       });
+      await createFriendRequestNotification(senderId, receiverId);
       return res.status(200).json({ status: "pending" });
     }
   } catch (error) {
@@ -105,7 +108,38 @@ async function GetFriendRequestStatus(req, res) {
   }
 }
 
+async function removeFriend(req, res) {
+  const { friendId } = req.body;
+  const userId = req.session.user.id;
+
+  try {
+    const deleteSenderRequest = prisma.friendRequest.deleteMany({
+      where: {
+        senderId: userId,
+        receiverId: friendId,
+        status: "accepted",
+      },
+    });
+
+    const deleteReceiverRequest = prisma.friendRequest.deleteMany({
+      where: {
+        senderId: friendId,
+        receiverId: userId,
+        status: "accepted",
+      },
+    });
+    await prisma.$transaction([deleteSenderRequest, deleteReceiverRequest]);
+
+    res.status(200).json({ message: "Friend removed successfully." });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "Could not remove friend.", details: error.message });
+  }
+}
+
 module.exports = {
+  removeFriend,
   sendFriendRequest,
   AcceptFriendRequest,
   GetFriendRequestStatus,

@@ -3,6 +3,7 @@ const imagekit = require("../lib/imagekit");
 const upload = require("../utils/multer");
 const multer = require("multer");
 const crypto = require("crypto");
+const { createLikeNotification } = require("./notificationController");
 
 async function createPost(req, res) {
   const { content, video } = req.body;
@@ -151,8 +152,21 @@ async function toggleLike(req, res) {
       },
     });
 
-    let responseMessage = "";
-    let updatedLikes;
+    const post = await prisma.post.findUnique({
+      where: {
+        id: postId,
+      },
+      select: {
+        userId: true,
+        likes: true,
+      },
+    });
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found." });
+    }
+
+    var updatedLikes;
 
     if (existingLike) {
       await prisma.likedPost.delete({
@@ -163,16 +177,12 @@ async function toggleLike(req, res) {
           },
         },
       });
-      const post = await prisma.post.update({
-        where: {
-          id: postId,
-        },
-        data: {
-          likes: { decrement: 1 },
-        },
-      });
-      responseMessage = "Successfully unliked the post.";
-      updatedLikes = post.likes;
+      updatedLikes = (
+        await prisma.post.update({
+          where: { id: postId },
+          data: { likes: { decrement: 1 } },
+        })
+      ).likes;
     } else {
       await prisma.likedPost.create({
         data: {
@@ -180,24 +190,38 @@ async function toggleLike(req, res) {
           postId: postId,
         },
       });
-      const post = await prisma.post.update({
-        where: {
-          id: postId,
-        },
-        data: {
-          likes: { increment: 1 },
-        },
-      });
-      responseMessage = "Successfully liked the post.";
-      updatedLikes = post.likes;
+
+      updatedLikes = (
+        await prisma.post.update({
+          where: { id: postId },
+          data: { likes: { increment: 1 } },
+        })
+      ).likes;
+
+      const postCreatedById = (
+        await prisma.post.findFirst({
+          where: {
+            id: postId,
+          },
+          select: {
+            createdById: true,
+          },
+        })
+      ).createdById;
+
+      if (userId !== post.userId) {
+        await createLikeNotification(postCreatedById, postId, userId);
+      }
     }
 
-    return res.json({ message: responseMessage, likes: updatedLikes });
+    return res
+      .status(200)
+      .json({ message: "Successfully liked the post.", likes: updatedLikes });
   } catch (error) {
-    console.error("Error toggling like:", error);
+    console.error("Error toggling like", error);
     return res.status(500).json({
-      message: "There was an error processing your request.",
-      error: error.message,
+      message: "An error occurred while toggling the like.",
+      error,
     });
   }
 }

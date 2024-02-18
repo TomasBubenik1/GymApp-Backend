@@ -31,6 +31,8 @@ model User {
   weightHistory           UserWeightHistory[]
   heightHistory           UserHeightHistory[]
   calorieIntakeHistory    CalorieIntakeHistory[]
+  receivedNotifications   Notification[]
+  sentNotifications       Notification[]            @relation("NotificationSender")
 }
 
 model UserWeightHistory {
@@ -73,7 +75,6 @@ model DailyCalorieIntake {
 
   user User @relation(fields: [userId], references: [id])
 
-  @@unique([userId, date])
   @@index([userId, date])
 }
 
@@ -200,4 +201,20 @@ model LikedPost {
   Post   Post @relation(fields: [postId], references: [id])
 
   @@id([userId, postId])
+}
+
+model Notification {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  senderId    Int
+  type        String
+  referenceId Int?
+  message     String
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  user   User  @relation(fields: [userId], references: [id])
+  sender User? @relation("NotificationSender", fields: [senderId], references: [id])
+
+  @@index([userId])
 }
