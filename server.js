@@ -49,6 +49,7 @@ const exerciseDataRoutes = require("./routes/exerciseData");
 const postRoutes = require("./routes/post");
 const friendRoutes = require("./routes/friend");
 const calorieRoutes = require("./routes/calories");
+// const notificationRoutes = require("./routes/notifications");
 
 app.use(
   "/api",
@@ -60,6 +61,7 @@ app.use(
   postRoutes,
   calorieRoutes,
   friendRoutes
+  // notificationRoutes
 );
 
 app.listen(port, () => {

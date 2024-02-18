@@ -182,9 +182,49 @@ async function getOneWorkoutPlan(req, res) {
   }
 }
 
+async function deleteWorkoutPlan(req,res) {
+  const { workoutPlanId } = req.body;
+  const userId = req.session?.user?.id;
+  if (!userId) {
+    return res.status(400).json({ message: "You arent logged in!" });
+  }
+  const isOwner = await prisma.workoutPlan.findFirst({
+    where: {
+      createdById: userId,
+      id: workoutPlanId,
+    },
+  });
+  if (!isOwner) {
+    return res
+      .status(400)
+      .json({ message: "You cant delete workout plan you dont own." });
+  }
+  if (!workoutPlanId) {
+    return res.status(400).json({
+      message: "You must provide the workoutplan id you want to delete!",
+    });
+  }
+  try {
+    const res = await prisma.workoutPlan.delete({
+      where: {
+        createdById: userId,
+        id: workoutPlanId,
+      },
+    });
+    return res
+      .status(200)
+      .json({ message: "Sucesfully deleted workout plan", res });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "There was error deleting workoutplan:", error });
+  }
+}
+
 module.exports = {
   createWorkoutPlan,
   addExerciseIntoPlan,
   getOneWorkoutPlan,
+  deleteWorkoutPlan,
   removeExerciseFromPlan,
 };

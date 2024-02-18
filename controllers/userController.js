@@ -41,16 +41,17 @@ async function Register(req, res) {
       .json({ message: "This username is already being uesd." });
   }
 
+  console.log(req.body);
   try {
     const user = await prisma.user.create({
       data: {
-        email,
-        nickname,
-        username,
-        age,
-        currentWeight,
-        goalWeight,
-        height,
+        email: email,
+        nickname: nickname,
+        username: username,
+        age: age,
+        currentWeight: parseFloat(currentWeight),
+        goalWeight: parseFloat(goalWeight),
+        height: height,
         password: hashedPassword,
       },
     });
@@ -85,27 +86,13 @@ async function getLoggedinUser(req, res) {
       },
       include: {
         likedPosts: true,
+        receivedNotifications: true,
+        workoutPlans: true,
+        userExerciseData: true,
       },
     });
 
-    const exercisePlans = await prisma.workoutPlan.findMany({
-      where: {
-        createdById: userId,
-      },
-      include: {
-        exercises: { include: { userExerciseData: true } },
-        createdBy: true,
-        likedWorkoutPlan: true,
-      },
-    });
-
-    const userExerciseData = await prisma.userExerciseData.findMany({
-      where: {
-        userId: userId,
-      },
-    });
-
-    return res.status(200).json({ exercisePlans, userExerciseData, UserData });
+    return res.status(200).json({ UserData });
   }
 }
 
