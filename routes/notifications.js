@@ -1,8 +1,10 @@
-// const express = require("express");
-// const router = express.Router();
+const express = require("express");
+const router = express.Router();
 
-// const { frinedNotification } = require("../controllers/notificationController");
+const {
+  viewIncomingNotifications,
+} = require("../controllers/notificationController");
 
-// router.route("/getfriendreqnotifications").post(frinedNotification);
+router.route("/viewincomingnotifications").post(viewIncomingNotifications);
 
-// module.exports = router;
+module.exports = router;

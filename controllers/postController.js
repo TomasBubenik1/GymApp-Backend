@@ -208,8 +208,14 @@ async function toggleLike(req, res) {
           },
         })
       ).createdById;
-
-      if (userId !== post.userId) {
+      const doesNotiExist = await prisma.notification.findFirst({
+        where: {
+          senderId: userId,
+          userId: postCreatedById,
+          referenceId: postId,
+        },
+      });
+      if (userId !== post.userId && !doesNotiExist) {
         await createLikeNotification(postCreatedById, postId, userId);
       }
     }
