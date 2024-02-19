@@ -8,7 +8,7 @@ async function createLikeNotification(userId, postId, senderId) {
         senderId,
         type: "like",
         referenceId: postId,
-        message: "Someone has liked your post.",
+        message: "has liked your post.",
         read: false,
       },
     });
@@ -24,9 +24,10 @@ async function createFriendRequestNotification(senderId, receiverId) {
     const notification = await prisma.notification.create({
       data: {
         userId: receiverId,
+        senderId: senderId,
         type: "friendRequest",
         referenceId: senderId,
-        message: "You have received a new friend request.",
+        message: "sent you friend request.",
         read: false,
       },
     });
@@ -47,14 +48,6 @@ async function viewIncomingNotifications(req, res) {
   }
 
   try {
-    const notifications = await prisma.notification.findMany({
-      where: {
-        userId: userId,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
     await prisma.notification.updateMany({
       where: {
         userId: userId,
@@ -64,7 +57,7 @@ async function viewIncomingNotifications(req, res) {
       },
     });
 
-    return res.status(200).json(notifications);
+    return res.status(200).json("Sucesfully cleared notifications!");
   } catch (error) {
     console.error("Error fetching notifications", error);
     return res.status(500).json({

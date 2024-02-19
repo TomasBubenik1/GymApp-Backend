@@ -1,5 +1,7 @@
 const prisma = require("../lib/prisma");
+const imagekit = require("../lib/imagekit");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 
 async function Register(req, res) {
   const {
@@ -86,7 +88,17 @@ async function getLoggedinUser(req, res) {
       },
       include: {
         likedPosts: true,
-        receivedNotifications: true,
+        receivedNotifications: {
+          include: {
+            sender: {
+              select: {
+                username: true,
+                nickname: true,
+                profilepicture: true,
+              },
+            },
+          },
+        },
         workoutPlans: true,
         userExerciseData: true,
       },
@@ -96,33 +108,68 @@ async function getLoggedinUser(req, res) {
   }
 }
 
-async function updateUserDetails(req, res) {
-  const { currentWeight, goalWeight, height } = req.body;
-  const sessionId = req.sessionID;
-  if (!sessionId) {
+async function handleBodyMassChange(req, res) {
+  const { newGoalWeight, newCurrentWeight, newHeight } = req.body;
+  const userId = req.session?.user.id;
+
+  if (!req.session) {
     res.status(400).json({ message: "You arent logged in" });
   } else {
-    const sessiondata = await prisma.session.findUnique({
-      where: { sid: sessionId },
-    });
-    const userId = sessiondata.sess.user.id;
-    const oldUserData = prisma.user.findMany({
-      where: { id: userId },
-      include: {
-        goalWeight: true,
-        currentWeight: true,
-        height: true,
+    const changedWeight = await prisma.user.update({
+      where: {
+        id: userId,
       },
-    });
-    const updatedHistory = prisma.userExerciseDataHistory.create({});
-    const newUserData = prisma.user.update({
-      where: { id: userId },
       data: {
-        height: height,
-        currentWeight: currentWeight,
-        goalWeight: goalWeight,
+        currentWeight: parseFloat(newCurrentWeight),
+        goalWeight: parseFloat(newGoalWeight),
+        height: parseFloat(newHeight),
       },
     });
+    return res
+      .status(200)
+      .json({ message: "Sucesfully updated body mass information" });
+  }
+}
+async function handleUserInfoChange(req, res) {
+  const { username, nickname, realname, bio } = req.body;
+
+  const userId = req.session?.user.id;
+  if (!req.session) {
+    res.status(400).json({ message: "You arent logged in" });
+  } else {
+    if (req.file) {
+      try {
+        const randomImageName = crypto.randomBytes(32).toString("hex");
+
+        const uploadResponse = await imagekit.upload({
+          file: req.file.buffer.toString("base64"),
+          fileName: randomImageName,
+          folder: "UserProfilePictures",
+        });
+        console.log("file name:", uploadResponse.name);
+
+        const changedInfo = await prisma.user.update({
+          where: {
+            id: userId,
+          },
+          data: {
+            username: username,
+            nickname: nickname,
+            realname: realname,
+            bio: bio,
+            profilepicture: `https://ik.imagekit.io/bubenik/UserProfilePictures/${uploadResponse.name}`,
+          },
+        });
+        console.log("Chantute info:", changedInfo);
+        return res
+          .status(200)
+          .json({ message: "Sucesfully changed user info!", changedInfo });
+      } catch (error) {
+        return res.status(500).json({
+          message: "There was updating profile info with profile picture!",
+        });
+      }
+    }
   }
 }
 
@@ -302,4 +349,6 @@ module.exports = {
   SearchUsers,
   checkUniqueEmail,
   checkUniqueUsername,
+  handleBodyMassChange,
+  handleUserInfoChange,
 };
