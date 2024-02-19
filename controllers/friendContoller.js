@@ -48,6 +48,14 @@ async function AcceptFriendRequest(req, res) {
   const userId = req.session.user.id;
   const { senderId } = req.body;
   try {
+    const deletedNotifications = await prisma.notification.deleteMany({
+      where: {
+        type: "friendRequest",
+        senderId: senderId,
+        userId: userId,
+      },
+    });
+
     const incommingfriendRequest = await prisma.friendRequest.update({
       where: {
         senderId_receiverId: {
