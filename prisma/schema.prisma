@@ -34,6 +34,7 @@ model User {
   calorieIntakeHistory    CalorieIntakeHistory[]
   receivedNotifications   Notification[]
   sentNotifications       Notification[]            @relation("NotificationSender")
+  userGoalWeightHistory   UserGoalWeightHistory[]
 }
 
 model UserWeightHistory {
@@ -42,6 +43,16 @@ model UserWeightHistory {
   weight Float
   date   DateTime @default(now())
   user   User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, date])
+}
+
+model UserGoalWeightHistory {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  goalWeight Float
+  date       DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
 
   @@index([userId, date])
 }

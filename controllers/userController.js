@@ -89,6 +89,9 @@ async function getLoggedinUser(req, res) {
       include: {
         likedPosts: true,
         receivedNotifications: {
+          orderBy: {
+            createdAt: "desc",
+          },
           include: {
             sender: {
               select: {
@@ -101,6 +104,9 @@ async function getLoggedinUser(req, res) {
         },
         workoutPlans: true,
         userExerciseData: true,
+        weightHistory: true,
+        userGoalWeightHistory: true,
+        heightHistory: true,
       },
     });
 
@@ -115,7 +121,18 @@ async function handleBodyMassChange(req, res) {
   if (!req.session) {
     res.status(400).json({ message: "You arent logged in" });
   } else {
-    const changedWeight = await prisma.user.update({
+    const oldBodyMass = await prisma.user.findFirst({
+      where: {
+        id: userId,
+      },
+      select: {
+        currentWeight: true,
+        goalWeight: true,
+        height: true,
+      },
+    });
+
+    const changedBodyMass = await prisma.user.update({
       where: {
         id: userId,
       },
@@ -125,6 +142,32 @@ async function handleBodyMassChange(req, res) {
         height: parseFloat(newHeight),
       },
     });
+
+    if (newCurrentWeight != oldBodyMass.currentWeight) {
+      const WeightHistoryEntry = await prisma.userWeightHistory.create({
+        data: {
+          userId: userId,
+          weight: oldBodyMass.currentWeight,
+        },
+      });
+    }
+    if (newHeight != oldBodyMass.height) {
+      const HeightHistoryEntry = await prisma.userHeightHistory.create({
+        data: {
+          userId: userId,
+          height: oldBodyMass.height,
+        },
+      });
+    }
+    if (newGoalWeight != oldBodyMass.goalWeight) {
+      const GoalWeightHistoryEntry = await prisma.userGoalWeightHistory.create({
+        data: {
+          userId: userId,
+          goalWeight: oldBodyMass.goalWeight,
+        },
+      });
+    }
+
     return res
       .status(200)
       .json({ message: "Sucesfully updated body mass information" });
