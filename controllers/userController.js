@@ -177,6 +177,7 @@ async function handleUserInfoChange(req, res) {
   const { username, nickname, realname, bio } = req.body;
 
   const userId = req.session?.user.id;
+  console.log(req.body);
   if (!req.session) {
     res.status(400).json({ message: "You arent logged in" });
   } else {
@@ -190,7 +191,6 @@ async function handleUserInfoChange(req, res) {
           folder: "UserProfilePictures",
         });
         console.log("file name:", uploadResponse.name);
-
         const changedInfo = await prisma.user.update({
           where: {
             id: userId,
