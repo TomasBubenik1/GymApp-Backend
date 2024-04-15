@@ -14,7 +14,7 @@ model User {
   username                String                    @unique
   nickname                String
   age                     Int?
-  bio                     String?
+  bio                     String? @db.VarChar(255)
   currentWeight           Float?
   goalWeight              Float?
   height                  Float?
