@@ -124,7 +124,7 @@ model WorkoutPlan {
   createdBy        User               @relation(fields: [createdById], references: [id])
   createdById      Int
   likedWorkoutPlan LikedWorkoutPlan[]
-  isPublic         Boolean            @default(true)
+  visibility       String            @default("Public")
   thumbnail        String             @default("https://ik.imagekit.io/bubenik/WorkoutPlanThumbnails/defaultworkoutplanthumbnail")
 }
 

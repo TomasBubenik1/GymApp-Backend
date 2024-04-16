@@ -56,25 +56,47 @@ async function createPost(req, res) {
 async function deletePost(req, res) {
   const { postId } = req.body;
   const user = req.session.user;
+
   if (!postId) {
-    res
+    return res
       .status(400)
-      .json({ message: "You must specify the postId you want to comment on!" });
-  } else if (!user) {
-    res.status(400).json({ message: "You must be logged in to delete post!" });
-  } else {
-    post = await prisma.post.findUnique({
+      .json({ message: "You must specify the postId you want to delete!" });
+  }
+  if (!user) {
+    return res
+      .status(400)
+      .json({ message: "You must be logged in to delete a post!" });
+  }
+
+  try {
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found!" });
+    }
+
+    if (post.createdById !== user.id) {
+      return res
+        .status(403)
+        .json({ message: "You can't delete a post you didn't create!" });
+    }
+
+    await prisma.likedPost.deleteMany({
       where: { postId: postId },
     });
-    if (post.createdById != user.id) {
-      res
-        .status(400)
-        .json({ message: "You cant delete a post you didnt create!" });
-    } else if ((post.createdById = user.id)) {
-      await prisma.post.delete({
-        where: { post: postId },
-      });
-    }
+
+    await prisma.post.delete({
+      where: { id: postId },
+    });
+
+    return res.status(200).json({ message: "Post deleted successfully!" });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while deleting the post." });
   }
 }
 
