@@ -140,28 +140,27 @@ async function getOneWorkoutPlan(req, res) {
   }
 
   try {
-    const workoutPlan = await prisma.workoutPlan.findFirst({
-      where: {
-        AND: [
-          { id: workoutPlanId },
-          {
-            OR: [{ createdById: userId }, { isPublic: true }],
-          },
-        ],
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        sentRequests: {
+          where: { status: "accepted" },
+          select: { receiverId: true },
+        },
+        receivedRequests: {
+          where: { status: "accepted" },
+          select: { senderId: true },
+        },
       },
+    });
+
+    const workoutPlan = await prisma.workoutPlan.findFirst({
+      where: { id: workoutPlanId },
       include: {
         exercises: {
           include: {
-            userExerciseData: {
-              where: {
-                userId: userId,
-              },
-            },
-            userExerciseDataHistory: {
-              where: {
-                userId: userId,
-              },
-            },
+            userExerciseData: { where: { userId: userId } },
+            userExerciseDataHistory: { where: { userId: userId } },
           },
         },
       },
@@ -169,11 +168,35 @@ async function getOneWorkoutPlan(req, res) {
 
     if (!workoutPlan) {
       return res
-        .status(404)
-        .json({ error: "Workout plan not found or access denied." });
+        .status(400)
+        .json({ error: "No workout plan found with this id." });
     }
 
-    return res.json(workoutPlan);
+    if (userId === workoutPlan.createdById) {
+      return res.status(200).json(workoutPlan);
+    }
+    if (
+      workoutPlan.visibility === "Private" &&
+      workoutPlan.createdById !== userId
+    ) {
+      return res
+        .status(403)
+        .json({ error: "You don't have access to view this workout plan." });
+    }
+
+    const friendIds = [
+      ...user.sentRequests.map((request) => request.receiverId),
+      ...user.receivedRequests.map((request) => request.senderId),
+    ];
+
+    if (
+      workoutPlan.visibility === "Friends" &&
+      !friendIds.includes(workoutPlan.createdById)
+    ) {
+      return res
+        .status(403)
+        .json({ error: "You don't have access to view this workout plan." });
+    }
   } catch (error) {
     console.error(error);
     return res
@@ -182,11 +205,41 @@ async function getOneWorkoutPlan(req, res) {
   }
 }
 
-async function deleteWorkoutPlan(req,res) {
-  const { workoutPlanId } = req.body;
+async function changeWorkoutPlanVisibility(req, res) {
+  const { workoutPlanId, newVisibility } = req.body;
   const userId = req.session?.user?.id;
   if (!userId) {
     return res.status(400).json({ message: "You arent logged in!" });
+  }
+  const isOwner = await prisma.workoutPlan.findFirst({
+    where: {
+      createdById: userId,
+      id: workoutPlanId,
+    },
+  });
+  if (!isOwner) {
+    return res
+      .status(403)
+      .json({ message: "You cant edit workout plan you don't own!" });
+  }
+  if (isOwner) {
+    const editedWorkoutPlat = await prisma.workoutPlan.update({
+      where: {
+        createdById: userId,
+        id: workoutPlanId,
+      },
+      data: {
+        visibility: newVisibility,
+      },
+    });
+  }
+}
+
+async function deleteWorkoutPlan(req, res) {
+  const { workoutPlanId } = req.body;
+  const userId = req.session?.user?.id;
+  if (!userId) {
+    return res.status(403).json({ message: "You arent logged in!" });
   }
   const isOwner = await prisma.workoutPlan.findFirst({
     where: {
@@ -227,4 +280,5 @@ module.exports = {
   getOneWorkoutPlan,
   deleteWorkoutPlan,
   removeExerciseFromPlan,
+  changeWorkoutPlanVisibility,
 };

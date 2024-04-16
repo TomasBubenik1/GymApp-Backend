@@ -266,8 +266,9 @@ async function getProfileInfo(req, res) {
           nickname: true,
           profilepicture: true,
           posts: true,
+          bio: true,
 
-          workoutPlans: { where: { isPublic: true } },
+          workoutPlans: { where: { visibility: "public" } },
         },
       });
 
@@ -331,6 +332,7 @@ async function getProfileInfo(req, res) {
             id: true,
             nickname: true,
             profilepicture: true,
+            bio: true,
             posts: {
               orderBy: {
                 createdAt: "desc",
